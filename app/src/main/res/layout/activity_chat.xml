@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="fill_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme" />
+
+    <TableLayout
+        android:id="@+id/bottom_content"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true">
+        <TableRow>
+            <TableRow android:layout_weight="4">
+
+                <EditText
+                    android:id="@+id/MessageText"
+                    android:layout_width="250dp"
+                    android:hint="@string/input_info" />
+            </TableRow>
+            <TableRow android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/imageButton"
+                    android:layout_height="wrap_content"
+                    android:onClick="send_msg"
+                    app:srcCompat="@android:drawable/ic_menu_send" />
+            </TableRow>
+        </TableRow>
+    </TableLayout>
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="618dp"
+        android:minHeight="5dp"
+        android:layout_above="@+id/bottom_content"
+        android:layout_below="@id/toolbar"
+        android:layout_marginBottom="8dp"
+        android:divider="@null"
+        android:headerDividersEnabled="false"
+        android:stackFromBottom="true" />
+
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="ExtraText">
+        android:textSize="30sp"
+    </TextView>
+</RelativeLayout>
