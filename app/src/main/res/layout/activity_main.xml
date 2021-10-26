@@ -14,13 +14,18 @@
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme" />
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="to_chatroom"
-        android:text="@string/chat_botton_name"
+    <ListView
+        android:id="@+id/chatroomList"
+        android:layout_width="match_parent"
+        android:layout_height="618dp"
+        android:minHeight="5dp"
         android:layout_below="@id/toolbar"
-        tools:ignore="UsingOnClickInXml" />
+        android:layout_marginBottom="8dp"
+        android:divider="#FFFFFF"
+        android:dividerHeight="4px"
+        android:clickable="true"
+
+        android:headerDividersEnabled="false"
+        android:focusable="true" />
 
 </RelativeLayout>

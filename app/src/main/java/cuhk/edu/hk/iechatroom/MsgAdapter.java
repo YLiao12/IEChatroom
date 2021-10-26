@@ -27,13 +27,12 @@ public class MsgAdapter extends ArrayAdapter<Msg> {
         if (convertView == null) {
             view = LayoutInflater.from(getContext()).inflate(resourceId, null);
             viewHolder = new ViewHolder();
-            viewHolder.leftLayout = (LinearLayout) view.findViewById
-                    (R.id.left_layout);
-            viewHolder.rightLayout = (LinearLayout) view.findViewById
-                    (R.id.right_layout);
+            viewHolder.leftLayout = (LinearLayout) view.findViewById(R.id.left_layout);
+            viewHolder.rightLayout = (LinearLayout) view.findViewById(R.id.right_layout);
             viewHolder.leftMsg = (TextView) view.findViewById(R.id.left_msg);
             viewHolder.rightMsg = (TextView) view.findViewById(R.id.right_msg);
-            viewHolder.time = (TextView) view.findViewById(R.id.right_time);
+            viewHolder.lefttime = (TextView) view.findViewById(R.id.left_time);
+            viewHolder.righttime = (TextView) view.findViewById(R.id.right_time);
             view.setTag(viewHolder);
         } else {
             view = convertView;
@@ -44,12 +43,13 @@ public class MsgAdapter extends ArrayAdapter<Msg> {
             viewHolder.leftLayout.setVisibility(View.VISIBLE);
             viewHolder.rightLayout.setVisibility(View.GONE);
             viewHolder.leftMsg.setText(msg.getMsg());
+            viewHolder.lefttime.setText(msg.getTime());
         } else if (msg.getType() == Msg.TYPE_SENT) {
         // 如果是发出的消息，则显示右边的消息布局，将左边的消息布局隐藏
             viewHolder.rightLayout.setVisibility(View.VISIBLE);
             viewHolder.leftLayout.setVisibility(View.GONE);
             viewHolder.rightMsg.setText(msg.getMsg());
-            viewHolder.time.setText(msg.getTime());
+            viewHolder.righttime.setText(msg.getTime());
         }
         return view;
     }
@@ -59,6 +59,7 @@ public class MsgAdapter extends ArrayAdapter<Msg> {
         LinearLayout rightLayout;
         TextView leftMsg;
         TextView rightMsg;
-        TextView time;
+        TextView lefttime;
+        TextView righttime;
     }
 }

@@ -57,4 +57,11 @@
         tools:ignore="ExtraText">
         android:textSize="30sp"
     </TextView>
+
+    <ImageButton
+        android:id="@+id/renew"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@id/toolbar"
+        app:srcCompat="@android:drawable/ic_popup_sync" />
 </RelativeLayout>
