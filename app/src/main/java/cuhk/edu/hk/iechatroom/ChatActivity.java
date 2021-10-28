@@ -113,10 +113,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public void refresh_msg(View view) {
-        ListView myListView = (ListView) findViewById(R.id.message_list);
-        List<Msg> msgList = new ArrayList<>();
-        MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
-        myListView.setAdapter(msgAdapter);
         GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(1, chatroomId, 1);
         page = 1;
         getMsgViaHttp.execute();
@@ -217,6 +213,7 @@ public class ChatActivity extends AppCompatActivity {
                 msgListView.setSelection(position);
             }
             else {
+                msgList.clear();
                 MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgListAsync);
                 msgListView.setAdapter(msgAdapter);
             }
