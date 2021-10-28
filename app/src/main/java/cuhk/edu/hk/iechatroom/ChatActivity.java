@@ -28,10 +28,13 @@ import okhttp3.Response;
 
 public class ChatActivity extends AppCompatActivity {
 
-    List<Msg> msgList = new ArrayList<Msg>();
-    int page = 1;
-    int chatroomId = 0;
-    int totalPage = 1;
+    private List<Msg> msgList = new ArrayList<Msg>();
+    private int page = 1;
+    private int chatroomId = 0;
+    private int totalPage = 1;
+    private int firstItem;
+    private int statusCode = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +48,7 @@ public class ChatActivity extends AppCompatActivity {
         chatroomId = extras.getInt("chatroomId");
         getSupportActionBar().setTitle(chatroomName);
 
-        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(page, chatroomId, msgList, this);
+        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(page, chatroomId);
         getMsgViaHttp.execute();
 
         try {
@@ -54,24 +57,32 @@ public class ChatActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        while(totalPage > page) {
-            ListView msgListView = (ListView) findViewById(R.id.message_list);
-            msgListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+        ListView msgListView = (ListView) findViewById(R.id.message_list);
+        msgListView.setOnScrollListener(new AbsListView.OnScrollListener() {
 
-                @Override
-                public void onScroll(AbsListView view, int first, int visible, int total) {
-                    // Your code here
-                    page++;
-                    ChatActivity.GetMsgViaHttp getMsgViaHttp = new ChatActivity
-                            .GetMsgViaHttp(page, chatroomId, msgList, 1);
-                    getMsgViaHttp.execute();
-                }
+            @Override
+            public void onScroll(AbsListView view, int first, int visible, int total) {
+                // Your code here
+                firstItem = first;
+            }
 
-                @Override
-                public void onScrollStateChanged(AbsListView view, int scrollState) {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                statusCode = scrollState;
+                if (statusCode != 0 && firstItem == 0) {
+                    if (totalPage > page) {
+
+                        page++;
+                        ChatActivity.GetMsgViaHttp getMsgViaHttp = new ChatActivity
+                                .GetMsgViaHttp(page, chatroomId);
+                        getMsgViaHttp.execute();
+
+
+                    }
+
                 }
-            });
-        }
+            }
+        });
     }
 
     public void send_msg(View view) {
@@ -106,7 +117,7 @@ public class ChatActivity extends AppCompatActivity {
         List<Msg> msgList = new ArrayList<>();
         MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
         myListView.setAdapter(msgAdapter);
-        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(page, chatroomId, msgList, this);
+        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(1, chatroomId);
         getMsgViaHttp.execute();
     }
 
@@ -114,23 +125,10 @@ public class ChatActivity extends AppCompatActivity {
 
         private int msgPage;
         private int chatroomId;
-        private List<Msg> msgListAsny;
-        private ChatActivity chatActivity;
-        private int scrollFlag = 0;
 
-        public GetMsgViaHttp(int msgPage, int chatroomId, List<Msg> msgList, ChatActivity chatActivity) {
+        public GetMsgViaHttp(int msgPage, int chatroomId) {
             this.msgPage = msgPage;
             this.chatroomId = chatroomId;
-            this.msgListAsny = msgList;
-            this.chatActivity = chatActivity;
-            this.scrollFlag = 0;
-        }
-
-        public GetMsgViaHttp(int msgPage, int chatroomId, List<Msg> msgList, int i) {
-            this.msgPage = msgPage;
-            this.chatroomId = chatroomId;
-            this.msgListAsny = msgList;
-            this.scrollFlag = i;
         }
 
         @Override
@@ -161,6 +159,7 @@ public class ChatActivity extends AppCompatActivity {
                         String totalPagesString = messageData.getString("total_pages");
                         int totalPages = Integer.parseInt(totalPagesString);
                         totalPage = totalPages;
+                        List<Msg> msgListAsny = new ArrayList<>();
                         if(status.equals("OK") && totalPages >= page) {
                             for (int i = 0; i < messageArray.length(); i++) {
                                 String msg = messageArray.getJSONObject(i).getString("message");
@@ -177,11 +176,13 @@ public class ChatActivity extends AppCompatActivity {
                                 messageBuffer.append(msg);
                                 Msg newMsg = new Msg(messageBuffer.toString(), type, time);
                                 msgListAsny.add(newMsg);
-
                             }
                         }
                         Collections.reverse(msgListAsny);
-                        chatActivity.msgList = msgListAsny;
+                        List<Msg> updateMsgList = new ArrayList<Msg>();
+                        updateMsgList.addAll(msgListAsny);
+                        updateMsgList.addAll(msgList);
+                        msgList = updateMsgList;
                         return msgListAsny;
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -190,28 +191,17 @@ public class ChatActivity extends AppCompatActivity {
             } catch (IOException e) {
                 return null;
             }
-
             return null;
         }
 
         @Override
         protected void onPostExecute(List<Msg> msgListAsny) {
-            if(scrollFlag == 2) {
-                msgListAsny.clear();
-            }
-            if(scrollFlag != 2) {
-                super.onPostExecute(msgListAsny);
-                ListView msgListView = (ListView) findViewById(R.id.message_list);
-                List<Msg> allMsgs = new ArrayList<Msg>();
-                if (scrollFlag == 1) {
-                    allMsgs.addAll(msgListAsny);
-                    allMsgs.addAll(chatActivity.msgList);
-                }
-                else
-                    allMsgs.addAll(msgListAsny);
-                MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, allMsgs);
-                msgListView.setAdapter(msgAdapter);
-            }
+            super.onPostExecute(msgListAsny);
+            ListView msgListView = (ListView) findViewById(R.id.message_list);
+            int fv = msgListView.getFirstVisiblePosition();
+            MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
+            msgListView.setSelection(fv);
+            msgListView.setAdapter(msgAdapter);
         }
     }
 
