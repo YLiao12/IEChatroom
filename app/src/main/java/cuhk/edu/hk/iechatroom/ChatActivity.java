@@ -121,7 +121,7 @@ public class ChatActivity extends AppCompatActivity {
         getMsgViaHttp.execute();
     }
 
-    private class GetMsgViaHttp extends AsyncTask<String, Void, List<Msg>> {
+    private class GetMsgViaHttp extends AsyncTask<String, Void, Integer> {
 
         private int msgPage;
         private int chatroomId;
@@ -132,7 +132,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         @Override
-        protected List<Msg> doInBackground(String... strings) {
+        protected Integer doInBackground(String... strings) {
             String url = "http://18.217.125.61/api/a3/get_messages";
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(url).build();
@@ -183,25 +183,27 @@ public class ChatActivity extends AppCompatActivity {
                         updateMsgList.addAll(msgListAsny);
                         updateMsgList.addAll(msgList);
                         msgList = updateMsgList;
-                        return msgListAsny;
+                        return msgListAsny.size();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
             } catch (IOException e) {
-                return null;
+                return 0;
             }
-            return null;
+            return 0;
         }
 
+
         @Override
-        protected void onPostExecute(List<Msg> msgListAsny) {
-            super.onPostExecute(msgListAsny);
+        protected void onPostExecute(Integer position) {
+            super.onPostExecute(position);
             ListView msgListView = (ListView) findViewById(R.id.message_list);
-            int fv = msgListView.getFirstVisiblePosition();
+            //int fv = msgListView.getFirstVisiblePosition();
             MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
-            msgListView.setSelection(fv);
+
             msgListView.setAdapter(msgAdapter);
+            msgListView.setSelection(position);
         }
     }
 
@@ -231,7 +233,7 @@ public class ChatActivity extends AppCompatActivity {
             OkHttpClient okHttpClient=new OkHttpClient();
             Request request=new Request.Builder().url("http://18.217.125.61/api/a3/send_message").post(formBody).build();
             try {
-                Response response = okHttpClient.newCall(request).execute();
+                okHttpClient.newCall(request).execute();
             } catch (IOException e) {
                 e.printStackTrace();
             }
