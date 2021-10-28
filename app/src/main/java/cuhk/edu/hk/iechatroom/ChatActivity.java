@@ -48,7 +48,7 @@ public class ChatActivity extends AppCompatActivity {
         chatroomId = extras.getInt("chatroomId");
         getSupportActionBar().setTitle(chatroomName);
 
-        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(page, chatroomId);
+        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(page, chatroomId, 0);
         getMsgViaHttp.execute();
 
         try {
@@ -74,7 +74,7 @@ public class ChatActivity extends AppCompatActivity {
 
                         page++;
                         ChatActivity.GetMsgViaHttp getMsgViaHttp = new ChatActivity
-                                .GetMsgViaHttp(page, chatroomId);
+                                .GetMsgViaHttp(page, chatroomId, 0);
                         getMsgViaHttp.execute();
 
 
@@ -117,22 +117,31 @@ public class ChatActivity extends AppCompatActivity {
         List<Msg> msgList = new ArrayList<>();
         MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
         myListView.setAdapter(msgAdapter);
-        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(1, chatroomId);
+        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(1, chatroomId, 1);
+        page = 1;
         getMsgViaHttp.execute();
     }
 
-    private class GetMsgViaHttp extends AsyncTask<String, Void, Integer> {
+    private class GetMsgViaHttp extends AsyncTask<String, Void, List<Msg>> {
 
         private int msgPage;
         private int chatroomId;
+        private int refreshFlag = 0;
+        private int position = 0;
 
         public GetMsgViaHttp(int msgPage, int chatroomId) {
             this.msgPage = msgPage;
             this.chatroomId = chatroomId;
         }
 
+        public GetMsgViaHttp(int msgPage, int chatroomId, int refreshFlag) {
+            this.msgPage = msgPage;
+            this.chatroomId = chatroomId;
+            this.refreshFlag = refreshFlag;
+        }
+
         @Override
-        protected Integer doInBackground(String... strings) {
+        protected List<Msg> doInBackground(String... strings) {
             String url = "http://18.217.125.61/api/a3/get_messages";
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(url).build();
@@ -183,27 +192,35 @@ public class ChatActivity extends AppCompatActivity {
                         updateMsgList.addAll(msgListAsny);
                         updateMsgList.addAll(msgList);
                         msgList = updateMsgList;
-                        return msgListAsny.size();
+                        position = msgListAsny.size();
+                        return msgListAsny;
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
             } catch (IOException e) {
-                return 0;
+                return null;
             }
-            return 0;
+            return null;
         }
 
 
         @Override
-        protected void onPostExecute(Integer position) {
-            super.onPostExecute(position);
+        protected void onPostExecute(List<Msg> msgListAsync) {
+
+            super.onPostExecute(msgListAsync);
             ListView msgListView = (ListView) findViewById(R.id.message_list);
             //int fv = msgListView.getFirstVisiblePosition();
-            MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
+            if(refreshFlag == 0) {
+                MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
+                msgListView.setAdapter(msgAdapter);
+                msgListView.setSelection(position);
+            }
+            else {
+                MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgListAsync);
+                msgListView.setAdapter(msgAdapter);
+            }
 
-            msgListView.setAdapter(msgAdapter);
-            msgListView.setSelection(position);
         }
     }
 
