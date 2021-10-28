@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // 通过getAdapter()方法取得MyAdapter对象，再调用getItem(int)返回一个Data对象
-                //String button = (String) chatroomList.getAdapter().getItem(i);
                 Intent intent = new Intent(MainActivity.this, ChatActivity.class);
                 Chatroom chatroom = (Chatroom) chatroomList.getAdapter().getItem(i);
                 intent.putExtra("chatroomName", chatroom.getChatroomName());
@@ -63,10 +62,6 @@ public class MainActivity extends AppCompatActivity {
     public class GetChatroomsViaHttp extends AsyncTask<String, String, List<Chatroom>> {
 
         List<Chatroom> adapterData = new ArrayList<Chatroom>();
-
-        public GetChatroomsViaHttp() {
-
-        }
 
         @Override
         protected void onPreExecute() {

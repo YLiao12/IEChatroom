@@ -62,4 +62,6 @@ public class MsgAdapter extends ArrayAdapter<Msg> {
         TextView lefttime;
         TextView righttime;
     }
+
+
 }

@@ -1,20 +1,13 @@
 package cuhk.edu.hk.iechatroom;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.appcompat.widget.Toolbar;
 
@@ -25,13 +18,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class ChatActivity extends AppCompatActivity {
@@ -39,6 +31,7 @@ public class ChatActivity extends AppCompatActivity {
     List<Msg> msgList = new ArrayList<Msg>();
     int page = 1;
     int chatroomId = 0;
+    int totalPage = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,58 +45,92 @@ public class ChatActivity extends AppCompatActivity {
         chatroomId = extras.getInt("chatroomId");
         getSupportActionBar().setTitle(chatroomName);
 
-        ChatActivity.GetMsgViaHttp getMsgViaHttp = new ChatActivity.GetMsgViaHttp(page, chatroomId, msgList);
+        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(page, chatroomId, msgList, this);
         getMsgViaHttp.execute();
 
-//        ListView msgListView = (ListView) findViewById(R.id.list);
-//        msgListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-//
-//            int totalPages;
-//            @Override
-//            public void onScroll(AbsListView view, int first, int visible, int total) {
-//                // Your code here
-//                page++;
-//                ChatActivity.GetMsgViaHttp getMsgViaHttp = new ChatActivity.GetMsgViaHttp(page, chatroomId, msgList);
-//                getMsgViaHttp.execute();
-//            }
-//            @Override
-//            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//            }
-//        });
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        while(totalPage > page) {
+            ListView msgListView = (ListView) findViewById(R.id.message_list);
+            msgListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+
+                @Override
+                public void onScroll(AbsListView view, int first, int visible, int total) {
+                    // Your code here
+                    page++;
+                    ChatActivity.GetMsgViaHttp getMsgViaHttp = new ChatActivity
+                            .GetMsgViaHttp(page, chatroomId, msgList, 1);
+                    getMsgViaHttp.execute();
+                }
+
+                @Override
+                public void onScrollStateChanged(AbsListView view, int scrollState) {
+                }
+            });
+        }
     }
-
-
 
     public void send_msg(View view) {
 
         EditText text = (EditText) findViewById(R.id.MessageText);
-        String textString = text.getText().toString();
-        if (textString.isEmpty() || textString.trim().length() == 0)
+        String msgString = text.getText().toString();
+        StringBuffer messageBuffer = new StringBuffer();
+        messageBuffer.append("User: Leo");
+        messageBuffer.append("\r\n");
+        messageBuffer.append(msgString);
+        if (msgString.isEmpty() || msgString.trim().length() == 0)
             return;
         text.setText("");
 
         SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
-        sdf.applyPattern("HH:mm");
+        sdf.applyPattern("yyyy-MM-dd HH:mm");
         Date date = new Date();
 
-        ListView myListView = (ListView) findViewById(R.id.list);
-        Msg msg = new Msg(textString, 1, sdf.format(date));
+        ListView myListView = (ListView) findViewById(R.id.message_list);
+        Msg msg = new Msg(messageBuffer.toString(), 1, sdf.format(date));
         msgList.add(msg);
         MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
         myListView.setAdapter(msgAdapter);
 
+        PostMsgToServer post = new PostMsgToServer(chatroomId, "Leo", 1155161159, msgString);
+        post.execute();
+
     }
 
-    public class GetMsgViaHttp extends AsyncTask<String, Void, List<Msg>> {
+    public void refresh_msg(View view) {
+        ListView myListView = (ListView) findViewById(R.id.message_list);
+        List<Msg> msgList = new ArrayList<>();
+        MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
+        myListView.setAdapter(msgAdapter);
+        GetMsgViaHttp getMsgViaHttp = new GetMsgViaHttp(page, chatroomId, msgList, this);
+        getMsgViaHttp.execute();
+    }
+
+    private class GetMsgViaHttp extends AsyncTask<String, Void, List<Msg>> {
 
         private int msgPage;
         private int chatroomId;
-        private List<Msg> msgList;
+        private List<Msg> msgListAsny;
+        private ChatActivity chatActivity;
+        private int scrollFlag = 0;
 
-        public GetMsgViaHttp(int msgPage, int chatroomId, List<Msg> msgList) {
+        public GetMsgViaHttp(int msgPage, int chatroomId, List<Msg> msgList, ChatActivity chatActivity) {
             this.msgPage = msgPage;
             this.chatroomId = chatroomId;
-            this.msgList = msgList;
+            this.msgListAsny = msgList;
+            this.chatActivity = chatActivity;
+            this.scrollFlag = 0;
+        }
+
+        public GetMsgViaHttp(int msgPage, int chatroomId, List<Msg> msgList, int i) {
+            this.msgPage = msgPage;
+            this.chatroomId = chatroomId;
+            this.msgListAsny = msgList;
+            this.scrollFlag = i;
         }
 
         @Override
@@ -133,22 +160,29 @@ public class ChatActivity extends AppCompatActivity {
                         String status = json.getString("status");
                         String totalPagesString = messageData.getString("total_pages");
                         int totalPages = Integer.parseInt(totalPagesString);
+                        totalPage = totalPages;
                         if(status.equals("OK") && totalPages >= page) {
                             for (int i = 0; i < messageArray.length(); i++) {
                                 String msg = messageArray.getJSONObject(i).getString("message");
                                 String user = messageArray.getJSONObject(i).getString("name");
                                 String time = messageArray.getJSONObject(i).getString("message_time");
+                                String id = messageArray.getJSONObject(i).getString("user_id");
                                 int type = Msg.TYPE_RECEIVED;
+                                if (Integer.parseInt(id) == 1155161159)
+                                    type = Msg.TYPE_SENT;
                                 StringBuffer messageBuffer = new StringBuffer();
                                 messageBuffer.append("User: ");
                                 messageBuffer.append(user);
                                 messageBuffer.append("\r\n");
                                 messageBuffer.append(msg);
                                 Msg newMsg = new Msg(messageBuffer.toString(), type, time);
-                                this.msgList.add(newMsg);
+                                msgListAsny.add(newMsg);
+
                             }
                         }
-                        return msgList;
+                        Collections.reverse(msgListAsny);
+                        chatActivity.msgList = msgListAsny;
+                        return msgListAsny;
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -161,11 +195,57 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(List<Msg> msgList) {
-            super.onPostExecute(msgList);
-            ListView msgListView = (ListView) findViewById(R.id.list);
-            MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, msgList);
-            msgListView.setAdapter(msgAdapter);
+        protected void onPostExecute(List<Msg> msgListAsny) {
+            if(scrollFlag == 2) {
+                msgListAsny.clear();
+            }
+            if(scrollFlag != 2) {
+                super.onPostExecute(msgListAsny);
+                ListView msgListView = (ListView) findViewById(R.id.message_list);
+                List<Msg> allMsgs = new ArrayList<Msg>();
+                if (scrollFlag == 1) {
+                    allMsgs.addAll(msgListAsny);
+                    allMsgs.addAll(chatActivity.msgList);
+                }
+                else
+                    allMsgs.addAll(msgListAsny);
+                MsgAdapter msgAdapter = new MsgAdapter(ChatActivity.this, R.layout.msg_item, allMsgs);
+                msgListView.setAdapter(msgAdapter);
+            }
+        }
+    }
+
+    private class PostMsgToServer extends AsyncTask<String, Void, Void> {
+
+        private int chatroomId;
+        private String userName;
+        private int userId;
+        private String msg;
+
+        public PostMsgToServer(int chatroomId, String userName, int userId, String msg) {
+            this.chatroomId = chatroomId;
+            this.userName = userName;
+            this.userId = userId;
+            this.msg = msg;
+        }
+
+        @Override
+        protected Void doInBackground(String... strings) {
+
+            FormBody.Builder builder = new FormBody.Builder()
+                    .add("chatroom_id", String.valueOf(chatroomId))
+                    .add("user_id", String.valueOf(userId))
+                    .add("name", userName)
+                    .add("message", msg);
+            RequestBody formBody=builder.build();
+            OkHttpClient okHttpClient=new OkHttpClient();
+            Request request=new Request.Builder().url("http://18.217.125.61/api/a3/send_message").post(formBody).build();
+            try {
+                Response response = okHttpClient.newCall(request).execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 }
