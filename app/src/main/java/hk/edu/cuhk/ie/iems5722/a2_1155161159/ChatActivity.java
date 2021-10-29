@@ -1,4 +1,4 @@
-package cuhk.edu.hk.iechatroom;
+package hk.edu.cuhk.ie.iems5722.a2_1155161159;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import hk.ie.iems5722.a2_1155161159.R;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -52,7 +53,7 @@ public class ChatActivity extends AppCompatActivity {
         getMsgViaHttp.execute();
 
         try {
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

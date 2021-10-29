@@ -1,4 +1,4 @@
-package cuhk.edu.hk.iechatroom;
+package hk.ie.iems5722.a2_1155161159;
 
 import android.content.Context;
 

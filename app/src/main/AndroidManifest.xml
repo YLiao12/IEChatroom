@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cuhk.edu.hk.iechatroom">
+    package="hk.ie.iems5722.a2_1155161159">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
@@ -11,12 +11,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IEChatRoom.NoActionBar">
         <activity
-            android:name=".ChatActivity"
+            android:name="hk.edu.cuhk.ie.iems5722.a2_1155161159.ChatActivity"
             android:exported="true"
-            android:parentActivityName="MainActivity"/>
+            android:parentActivityName="hk.edu.cuhk.ie.iems5722.a2_1155161159.MainActivity"/>
 
         <activity
-            android:name=".MainActivity"
+            android:name="hk.edu.cuhk.ie.iems5722.a2_1155161159.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
