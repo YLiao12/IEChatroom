@@ -11,7 +11,8 @@ import android.widget.ListView;
 
 import androidx.appcompat.widget.Toolbar;
 
-import org.json.JSONArray;
+import com.alibaba.fastjson.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -139,7 +140,7 @@ public class ChatActivity extends AppCompatActivity {
 
         @Override
         protected List<Msg> doInBackground(String... strings) {
-            String url = "http://18.217.125.61/api/a3/get_messages";
+            String url = "http://18.219.7.155:8080/api/a3/get_messages";
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(url).build();
             HttpUrl.Builder urlBuilder = request.url().newBuilder();
@@ -160,20 +161,27 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     try {
                         JSONObject messageData = json.getJSONObject("data");
-                        JSONArray messageArray = messageData.getJSONArray("messages");
+
+                        String arrayString = messageData.getString("messages");
+                        JSONArray messageArray = JSONArray.parseArray(arrayString);
+
+                        // JSONArray messageArray = messageData.getJSONArray("messages");
+
                         String status = json.getString("status");
                         String totalPagesString = messageData.getString("total_pages");
                         int totalPages = Integer.parseInt(totalPagesString);
                         totalPage = totalPages;
                         List<Msg> msgListAsny = new ArrayList<>();
                         if(status.equals("OK") && totalPages >= page) {
-                            for (int i = 0; i < messageArray.length(); i++) {
-                                String msg = messageArray.getJSONObject(i).getString("message");
-                                String user = messageArray.getJSONObject(i).getString("name");
-                                String time = messageArray.getJSONObject(i).getString("message_time");
-                                String id = messageArray.getJSONObject(i).getString("user_id");
+                            for (int i = 0; i < messageArray.size(); i++) {
+                                String msg = messageArray.getJSONObject(i).getObject("message", String.class);
+                                String user = messageArray.getJSONObject(i).getObject("name", String.class);
+                                String time = messageArray.getJSONObject(i).getObject("message_time", String.class);
+                                String id = messageArray.getJSONObject(i).getObject("user_id", String.class);
                                 int type = Msg.TYPE_RECEIVED;
                                 if (Integer.parseInt(id) == 1155161159)
+                                    type = Msg.TYPE_SENT;
+                                else if(user.equals("leo"))
                                     type = Msg.TYPE_SENT;
                                 StringBuffer messageBuffer = new StringBuffer();
                                 messageBuffer.append("User: ");
@@ -246,7 +254,7 @@ public class ChatActivity extends AppCompatActivity {
                     .add("message", msg);
             RequestBody formBody=builder.build();
             OkHttpClient okHttpClient=new OkHttpClient();
-            Request request=new Request.Builder().url("http://18.217.125.61/api/a3/send_message").post(formBody).build();
+            Request request=new Request.Builder().url("http://18.219.7.155:8080/api/a3/send_message").post(formBody).build();
             try {
                 okHttpClient.newCall(request).execute();
             } catch (IOException e) {

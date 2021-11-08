@@ -10,7 +10,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import org.json.JSONArray;
+import com.alibaba.fastjson.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("IEMS5722");
 
         //AsyncTask
-        String url = "http://18.217.125.61/api/a3/get_chatrooms";
+        String url = "http://18.219.7.155:8080/api/a3/get_chatrooms";
         GetChatroomsViaHttp getChatroomsViaHttp = new GetChatroomsViaHttp();
         getChatroomsViaHttp.execute(url);
 
@@ -82,10 +83,11 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     try {
-                        JSONArray array = json.getJSONArray("data");
-                        for (int i = 0; i < array.length(); i++) {
-                            String chatroomName = array.getJSONObject(i).getString("name");
-                            int chatroomId = array.getJSONObject(i).getInt("id");
+                        String arrayString = json.getString("data");
+                        JSONArray array = JSONArray.parseArray(arrayString);
+                        for (int i = 0; i < array.size(); i++) {
+                            String chatroomName = array.getJSONObject(i).getObject("name", String.class);
+                            int chatroomId = array.getJSONObject(i).getObject("id", Integer.class);
                             Chatroom newChatroom = new Chatroom(chatroomId, chatroomName);
                             chatroomList.add(newChatroom);
                         }
