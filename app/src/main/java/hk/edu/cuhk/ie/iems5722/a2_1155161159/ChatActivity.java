@@ -140,7 +140,7 @@ public class ChatActivity extends AppCompatActivity {
 
         @Override
         protected List<Msg> doInBackground(String... strings) {
-            String url = "http://18.219.7.155:8080/api/a3/get_messages";
+            String url = "http://34.92.209.154/api/a3/get_messages";
             Request.Builder builder = new Request.Builder();
             Request request = builder.url(url).build();
             HttpUrl.Builder urlBuilder = request.url().newBuilder();
@@ -254,7 +254,7 @@ public class ChatActivity extends AppCompatActivity {
                     .add("message", msg);
             RequestBody formBody=builder.build();
             OkHttpClient okHttpClient=new OkHttpClient();
-            Request request=new Request.Builder().url("http://18.219.7.155:8080/api/a3/send_message").post(formBody).build();
+            Request request=new Request.Builder().url("http://34.92.209.154/api/a3/send_message").post(formBody).build();
             try {
                 okHttpClient.newCall(request).execute();
             } catch (IOException e) {

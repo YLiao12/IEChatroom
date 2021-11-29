@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("IEMS5722");
 
         //AsyncTask
-        String url = "http://18.219.7.155:8080/api/a3/get_chatrooms";
+        String url = "http://34.92.209.154/api/a3/get_chatrooms";
         GetChatroomsViaHttp getChatroomsViaHttp = new GetChatroomsViaHttp();
         getChatroomsViaHttp.execute(url);
 
