@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.alibaba.fastjson.JSONArray;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
         Toolbar myToolBar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolBar);
         getSupportActionBar().setTitle("IEMS5722");
+
+        //Firebase
+        MyFirebaseMsgService myFirebaseMsgService = new MyFirebaseMsgService();
+        FirebaseMessaging.getInstance().setAutoInitEnabled(true);
 
         //AsyncTask
         String url = "http://34.92.209.154/api/a3/get_chatrooms";
