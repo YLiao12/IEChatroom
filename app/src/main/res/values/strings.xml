@@ -3,4 +3,5 @@
     <string name="chat_botton_name">Default Chatroom</string>
     <string name="input_info">Type something...</string>
     <string name="send_msg">send</string>
+    <string name="msg_token_fmt" translatable="false">InstanceID Token: %s</string>
 </resources>
